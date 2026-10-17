@@ -25,7 +25,7 @@
       </header>
 
       <section class="intro" aria-labelledby="page-title">
-        <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> WORLD / MOLLWEIDE PROJECTION</p>
+        <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> WORLD / EQUAL-AREA PROJECTIONS</p>
         <h1 id="page-title">The world,<br><span>from another angle.</span></h1>
         <p class="intro-copy">Every place keeps its area. You choose what belongs at the center.</p>
       </section>
@@ -35,6 +35,7 @@
           <div>
             <p class="eyebrow control-eyebrow">MAKE IT YOURS</p>
             <h2 id="controls-title">Set your perspective</h2>
+            <p id="angle-help">Set the map center by longitude and latitude. Rotate the map to change which direction is at the top.</p>
           </div>
         </div>
         <div class="angle-control" data-angle-control="longitude">
@@ -67,7 +68,10 @@
         </div>
         <div class="angle-control" data-angle-control="rotation">
           <div class="angle-control-heading">
-            <label for="rotation-slider">Rotate map from north</label>
+            <span class="angle-label-group">
+              <label for="rotation-slider">Rotate map from north</label>
+              <button id="rotation-reset" class="angle-reset" type="button" aria-label="Reset map rotation to north" title="Reset rotation to north">&orarr;</button>
+            </span>
             <label class="angle-input">
               <span class="visually-hidden">Map rotation in degrees, from -180 to 180</span>
               <input id="rotation-number" data-angle="rotation" type="number" min="-180" max="180" step="any" value="0" inputmode="decimal" aria-describedby="angle-help">
@@ -80,19 +84,9 @@
           </div>
         </div>
         <div class="controls-footer">
-          <p id="angle-help">Set the map center by longitude and latitude. Rotate the map to change which direction is at the top.</p>
-          <button id="reset-button" class="reset-button" type="button">RESET <span aria-hidden="true">&orarr;</span></button>
+          <span class="points-label">POINTS OF INTEREST</span>
+          <div id="poi-tabs" class="poi-tabs" role="group" aria-label="Choose a point of interest"></div>
         </div>
-      </section>
-
-      <section class="points-of-interest" aria-labelledby="points-title">
-        <div class="points-heading">
-          <div>
-            <p class="eyebrow control-eyebrow">QUICK CENTERS</p>
-            <h2 id="points-title">Points of interest</h2>
-          </div>
-        </div>
-        <div id="poi-tabs" class="poi-tabs" role="group" aria-label="Choose a point of interest"></div>
       </section>
 
       <section class="map-section" aria-label="Interactive world map">
@@ -101,11 +95,15 @@
             <span class="live-dot" aria-hidden="true"></span>
             <span>EARTH, RE-CENTERED</span>
           </div>
-          <p class="map-projection">MOLLWEIDE <span aria-hidden="true">/</span> EQUAL AREA</p>
+          <span id="map-projection" class="map-projection">MOLLWEIDE <span aria-hidden="true">/</span> EQUAL AREA</span>
+        </div>
+        <div class="projection-control">
+          <span class="projection-label">MAP PROJECTION</span>
+          <div id="projection-options" class="projection-options" role="group" aria-label="Choose an equal-area map projection"></div>
         </div>
         <div class="map-frame">
-          <svg id="world-map" class="world-map" role="img" aria-label="World map centered at longitude 0 degrees">
-            <title>World map in the Mollweide equal-area projection</title>
+          <svg id="world-map" class="world-map" role="img" aria-label="World map in the Mollweide equal-area projection">
+            <title id="map-title">World map in the Mollweide equal-area projection</title>
             <desc>Use the controls above to change the map center and rotate the map relative to north.</desc>
             <g class="map-layer map-ocean"></g>
             <g class="map-layer map-graticule"></g>

@@ -4,11 +4,29 @@
   const status = document.querySelector("#map-status");
   const centerLabel = document.querySelector("#map-center");
   const rotationLabel = document.querySelector("#map-rotation");
-  const resetButton = document.querySelector("#reset-button");
+  const projectionLabel = document.querySelector("#map-projection");
+  const projectionTitle = document.querySelector("#map-title");
+  const projectionOptions = document.querySelector("#projection-options");
+  const rotationResetButton = document.querySelector("#rotation-reset");
   const pointsContainer = document.querySelector("#poi-tabs");
   const dataUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json";
   let world;
   const angles = { longitude: 0, latitude: 0, rotation: 0 };
+  const projections = [
+    { id: "equal-earth", name: "Equal Earth", create: () => d3.geoEqualEarth() },
+    { id: "mollweide", name: "Mollweide", create: () => d3.geoMollweide() },
+    {
+      id: "gall-peters",
+      name: "Gall–Peters",
+      create: () => d3.geoCylindricalEqualArea().parallel(45)
+    },
+    {
+      id: "lambert",
+      name: "Lambert azimuthal",
+      create: () => d3.geoAzimuthalEqualArea()
+    }
+  ];
+  let selectedProjection = "mollweide";
   const pointsOfInterest = [
     { name: "Null Island", longitude: 0, latitude: 0 },
     {
@@ -53,6 +71,7 @@
     const longitude = formatLongitude(angles.longitude);
     const latitude = formatLatitude(angles.latitude);
     const rotation = formatRotation(angles.rotation);
+    const currentProjection = projections.find(({ id }) => id === selectedProjection);
     centerLabel.textContent = `${longitude} / ${latitude}`;
     rotationLabel.textContent = rotation;
     for (const point of pointsOfInterest) {
@@ -61,7 +80,12 @@
         String(angles.longitude === point.longitude && angles.latitude === point.latitude));
     }
     map.setAttribute("aria-label",
-      `World map centered at ${longitude}, ${latitude}, rotated ${rotation} from north`);
+      `${currentProjection.name} equal-area world map centered at ${longitude}, ${latitude}, rotated ${rotation} from north`);
+    projectionLabel.firstChild.textContent = `${currentProjection.name.toUpperCase()} `;
+    projectionTitle.textContent = `World map in the ${currentProjection.name} equal-area projection`;
+    for (const button of projectionOptions.querySelectorAll("[data-projection]")) {
+      button.setAttribute("aria-pressed", String(button.dataset.projection === selectedProjection));
+    }
   }
 
   function setAngles(changes) {
@@ -86,7 +110,8 @@
     map.style.height = `${height}px`;
 
     const sphere = { type: "Sphere" };
-    const projection = d3.geoMollweide()
+    const projectionDefinition = projections.find(({ id }) => id === selectedProjection);
+    const projection = projectionDefinition.create()
       .rotate([-angles.longitude, -angles.latitude, angles.rotation])
       .fitExtent([[16, 12], [width - 16, height - 12]], sphere);
     const path = d3.geoPath(projection);
@@ -139,9 +164,22 @@
     pointsContainer.append(button);
   }
 
-  resetButton.addEventListener("click", () => {
-    setAngles({ longitude: 0, latitude: 0, rotation: 0 });
-  });
+  for (const projection of projections) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "projection-option";
+    button.dataset.projection = projection.id;
+    button.setAttribute("aria-pressed", String(projection.id === selectedProjection));
+    button.textContent = projection.name;
+    button.addEventListener("click", () => {
+      selectedProjection = projection.id;
+      updateMapLabel();
+      if (world) renderMap();
+    });
+    projectionOptions.append(button);
+  }
+
+  rotationResetButton.addEventListener("click", () => setAngles({ rotation: 0 }));
   updateMapLabel();
 
   async function loadMap() {
