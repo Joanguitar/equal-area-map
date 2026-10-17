@@ -1,8 +1,13 @@
 # Equal Area
 
-An interactive world map in the Mollweide equal-area projection. Drag the
-longitude slider or enter a value from -180 to 180 to move the center of the
-map.
+An interactive world map in the Mollweide equal-area projection. Set the center
+longitude (-180 to 180) and latitude (-90 to 90), then rotate the map relative
+to north (-180 to 180). Use the sliders, enter coordinates directly, or choose
+a point of interest below the controls. Choosing a point changes the center but
+keeps the map rotation. Reset returns all settings to zero.
+
+To add another point of interest, add its name and longitude/latitude in
+decimal degrees to the `pointsOfInterest` list in `app.js`.
 
 ## Run locally
 

@@ -3,25 +3,76 @@
   const mapFrame = document.querySelector(".map-frame");
   const status = document.querySelector("#map-status");
   const centerLabel = document.querySelector("#map-center");
-  const slider = document.querySelector("#longitude-slider");
-  const numberInput = document.querySelector("#longitude-number");
+  const rotationLabel = document.querySelector("#map-rotation");
   const resetButton = document.querySelector("#reset-button");
+  const pointsContainer = document.querySelector("#poi-tabs");
   const dataUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json";
   let world;
-  let centerLongitude = 0;
+  const angles = { longitude: 0, latitude: 0, rotation: 0 };
+  const pointsOfInterest = [
+    { name: "Null Island", longitude: 0, latitude: 0 },
+    {
+      name: "Point Nemo",
+      longitude: -(123 + 23.6 / 60),
+      latitude: -(48 + 52.6 / 60)
+    }
+  ];
+  const angleLimits = {
+    longitude: [-180, 180],
+    latitude: [-90, 90],
+    rotation: [-180, 180]
+  };
 
-  function formatLongitude(longitude) {
-    if (longitude === 0) return "0°";
-    return `${Math.abs(longitude)}° ${longitude < 0 ? "W" : "E"}`;
+  function formatCoordinate(value, positiveDirection, negativeDirection) {
+    if (value === 0) return "0°";
+    let degrees = Math.floor(Math.abs(value));
+    let minutes = Math.round((Math.abs(value) - degrees) * 600) / 10;
+    if (minutes === 60) {
+      degrees += 1;
+      minutes = 0;
+    }
+    const minuteLabel = minutes === 0 ? "" : ` ${minutes}′`;
+    const direction = value < 0 ? negativeDirection : positiveDirection;
+    return `${degrees}°${minuteLabel} ${direction}`;
   }
 
-  function setCenter(longitude) {
-    centerLongitude = longitude;
-    slider.value = String(longitude);
-    numberInput.value = String(longitude);
-    numberInput.removeAttribute("aria-invalid");
-    centerLabel.textContent = formatLongitude(longitude);
-    map.setAttribute("aria-label", `World map centered at longitude ${formatLongitude(longitude)}`);
+  function formatLongitude(longitude) {
+    return formatCoordinate(longitude, "E", "W");
+  }
+
+  function formatLatitude(latitude) {
+    return formatCoordinate(latitude, "N", "S");
+  }
+
+  function formatRotation(rotation) {
+    if (rotation === 0) return "0°";
+    return `${rotation > 0 ? "+" : "−"}${Math.abs(rotation)}°`;
+  }
+
+  function updateMapLabel() {
+    const longitude = formatLongitude(angles.longitude);
+    const latitude = formatLatitude(angles.latitude);
+    const rotation = formatRotation(angles.rotation);
+    centerLabel.textContent = `${longitude} / ${latitude}`;
+    rotationLabel.textContent = rotation;
+    for (const point of pointsOfInterest) {
+      const button = pointsContainer.querySelector(`[data-point="${point.name}"]`);
+      button.setAttribute("aria-pressed",
+        String(angles.longitude === point.longitude && angles.latitude === point.latitude));
+    }
+    map.setAttribute("aria-label",
+      `World map centered at ${longitude}, ${latitude}, rotated ${rotation} from north`);
+  }
+
+  function setAngles(changes) {
+    Object.assign(angles, changes);
+    for (const name of Object.keys(changes)) {
+      document.querySelector(`#${name}-slider`).value = String(angles[name]);
+      const numberInput = document.querySelector(`#${name}-number`);
+      numberInput.value = String(angles[name]);
+      numberInput.removeAttribute("aria-invalid");
+    }
+    updateMapLabel();
     if (world) renderMap();
   }
 
@@ -36,7 +87,7 @@
 
     const sphere = { type: "Sphere" };
     const projection = d3.geoMollweide()
-      .rotate([-centerLongitude, 0, 0])
+      .rotate([-angles.longitude, -angles.latitude, angles.rotation])
       .fitExtent([[16, 12], [width - 16, height - 12]], sphere);
     const path = d3.geoPath(projection);
 
@@ -49,25 +100,49 @@
     map.querySelector(".map-outline").innerHTML = `<path d="${path(sphere)}"></path>`;
   }
 
-  function onNumberInput() {
-    const value = numberInput.valueAsNumber;
-    const valid = Number.isInteger(value) && value >= -180 && value <= 180;
-    if (!valid) {
-      numberInput.setAttribute("aria-invalid", "true");
-      return;
-    }
-    setCenter(value);
+  for (const [name, [minimum, maximum]] of Object.entries(angleLimits)) {
+    const slider = document.querySelector(`#${name}-slider`);
+    const numberInput = document.querySelector(`#${name}-number`);
+    slider.addEventListener("input", () => setAngles({ [name]: Number(slider.value) }));
+    numberInput.addEventListener("input", () => {
+      const value = numberInput.valueAsNumber;
+      if (!Number.isFinite(value) || value < minimum || value > maximum) {
+        numberInput.setAttribute("aria-invalid", "true");
+        return;
+      }
+      setAngles({ [name]: value });
+    });
+    numberInput.addEventListener("change", () => {
+      if (numberInput.getAttribute("aria-invalid") === "true") {
+        setAngles({ [name]: angles[name] });
+      }
+    });
   }
 
-  slider.addEventListener("input", () => setCenter(Number(slider.value)));
-  numberInput.addEventListener("input", onNumberInput);
-  numberInput.addEventListener("change", () => {
-    if (numberInput.getAttribute("aria-invalid") === "true") {
-      numberInput.value = String(centerLongitude);
-      numberInput.removeAttribute("aria-invalid");
-    }
+  for (const point of pointsOfInterest) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "poi-tab";
+    button.setAttribute("data-point", point.name);
+    button.setAttribute("aria-pressed", "false");
+    const name = document.createElement("span");
+    name.className = "poi-name";
+    name.textContent = point.name;
+    const coordinates = document.createElement("span");
+    coordinates.className = "poi-coordinates";
+    coordinates.textContent = `${formatLatitude(point.latitude)} / ${formatLongitude(point.longitude)}`;
+    button.append(name, coordinates);
+    button.addEventListener("click", () => setAngles({
+      longitude: point.longitude,
+      latitude: point.latitude
+    }));
+    pointsContainer.append(button);
+  }
+
+  resetButton.addEventListener("click", () => {
+    setAngles({ longitude: 0, latitude: 0, rotation: 0 });
   });
-  resetButton.addEventListener("click", () => setCenter(0));
+  updateMapLabel();
 
   async function loadMap() {
     try {

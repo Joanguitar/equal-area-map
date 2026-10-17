@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#f5f4ef">
-    <meta name="description" content="Explore an equal-area view of Earth and change which longitude sits at the center of the map.">
+    <meta name="description" content="Explore an equal-area view of Earth, choose its center longitude and latitude, and rotate the map.">
     <title>Equal Area — A different center for the world</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="styles.css">
@@ -30,6 +30,71 @@
         <p class="intro-copy">Every place keeps its area. You choose what belongs at the center.</p>
       </section>
 
+      <section class="controls" aria-labelledby="controls-title">
+        <div class="controls-heading">
+          <div>
+            <p class="eyebrow control-eyebrow">MAKE IT YOURS</p>
+            <h2 id="controls-title">Set your perspective</h2>
+          </div>
+        </div>
+        <div class="angle-control" data-angle-control="longitude">
+          <div class="angle-control-heading">
+            <label for="longitude-slider">Center longitude</label>
+            <label class="angle-input">
+              <span class="visually-hidden">Center longitude in degrees, from -180 to 180</span>
+              <input id="longitude-number" data-angle="longitude" type="number" min="-180" max="180" step="any" value="0" inputmode="decimal" aria-describedby="angle-help">
+              <span class="input-unit">DEG</span>
+            </label>
+          </div>
+          <input id="longitude-slider" data-angle="longitude" class="angle-slider" type="range" min="-180" max="180" step="any" value="0" aria-label="Center longitude" aria-describedby="angle-help">
+          <div class="slider-labels" aria-hidden="true">
+            <span>180&deg; W</span><span>0&deg;</span><span>180&deg; E</span>
+          </div>
+        </div>
+        <div class="angle-control" data-angle-control="latitude">
+          <div class="angle-control-heading">
+            <label for="latitude-slider">Center latitude</label>
+            <label class="angle-input">
+              <span class="visually-hidden">Center latitude in degrees, from -90 to 90</span>
+              <input id="latitude-number" data-angle="latitude" type="number" min="-90" max="90" step="any" value="0" inputmode="decimal" aria-describedby="angle-help">
+              <span class="input-unit">DEG</span>
+            </label>
+          </div>
+          <input id="latitude-slider" data-angle="latitude" class="angle-slider" type="range" min="-90" max="90" step="any" value="0" aria-label="Center latitude" aria-describedby="angle-help">
+          <div class="slider-labels" aria-hidden="true">
+            <span>90&deg; S</span><span>0&deg;</span><span>90&deg; N</span>
+          </div>
+        </div>
+        <div class="angle-control" data-angle-control="rotation">
+          <div class="angle-control-heading">
+            <label for="rotation-slider">Rotate map from north</label>
+            <label class="angle-input">
+              <span class="visually-hidden">Map rotation in degrees, from -180 to 180</span>
+              <input id="rotation-number" data-angle="rotation" type="number" min="-180" max="180" step="any" value="0" inputmode="decimal" aria-describedby="angle-help">
+              <span class="input-unit">DEG</span>
+            </label>
+          </div>
+          <input id="rotation-slider" data-angle="rotation" class="angle-slider" type="range" min="-180" max="180" step="any" value="0" aria-label="Rotate map from north" aria-describedby="angle-help">
+          <div class="slider-labels" aria-hidden="true">
+            <span>&minus;180&deg;</span><span>0&deg; &middot; N UP</span><span>+180&deg;</span>
+          </div>
+        </div>
+        <div class="controls-footer">
+          <p id="angle-help">Set the map center by longitude and latitude. Rotate the map to change which direction is at the top.</p>
+          <button id="reset-button" class="reset-button" type="button">RESET <span aria-hidden="true">&orarr;</span></button>
+        </div>
+      </section>
+
+      <section class="points-of-interest" aria-labelledby="points-title">
+        <div class="points-heading">
+          <div>
+            <p class="eyebrow control-eyebrow">QUICK CENTERS</p>
+            <h2 id="points-title">Points of interest</h2>
+          </div>
+        </div>
+        <div id="poi-tabs" class="poi-tabs" role="group" aria-label="Choose a point of interest"></div>
+      </section>
+
       <section class="map-section" aria-label="Interactive world map">
         <div class="map-heading">
           <div class="map-caption">
@@ -41,7 +106,7 @@
         <div class="map-frame">
           <svg id="world-map" class="world-map" role="img" aria-label="World map centered at longitude 0 degrees">
             <title>World map in the Mollweide equal-area projection</title>
-            <desc>Use the longitude controls below to change the center of the map.</desc>
+            <desc>Use the controls above to change the map center and rotate the map relative to north.</desc>
             <g class="map-layer map-ocean"></g>
             <g class="map-layer map-graticule"></g>
             <g class="map-layer map-land"></g>
@@ -49,37 +114,13 @@
             <g class="map-layer map-outline"></g>
           </svg>
           <div class="map-coordinates" aria-hidden="true">
-            <span class="coordinate-label">CENTER LONGITUDE</span>
-            <span id="map-center" class="coordinate-value">0&deg;</span>
+            <span class="coordinate-label">CENTER / LON · LAT</span>
+            <span id="map-center" class="coordinate-value">0&deg; / 0&deg;</span>
+            <span class="coordinate-detail">ROTATION FROM NORTH <span id="map-rotation">0&deg;</span></span>
           </div>
           <p id="map-status" class="map-status" role="status" aria-live="polite">Loading map data...</p>
         </div>
         <p class="map-credit">Geographic data from Natural Earth, via World Atlas.</p>
-      </section>
-
-      <section class="controls" aria-labelledby="controls-title">
-        <div class="controls-heading">
-          <div>
-            <p class="eyebrow control-eyebrow">MAKE IT YOURS</p>
-            <h2 id="controls-title">Choose your center</h2>
-          </div>
-          <label class="longitude-input">
-            <span class="visually-hidden">Center longitude in degrees, from -180 to 180</span>
-            <input id="longitude-number" type="number" min="-180" max="180" step="1" value="0" inputmode="numeric" aria-describedby="longitude-help">
-            <span class="input-unit">DEG</span>
-          </label>
-        </div>
-        <label class="visually-hidden" for="longitude-slider">Center longitude</label>
-        <input id="longitude-slider" class="longitude-slider" type="range" min="-180" max="180" step="1" value="0" aria-describedby="longitude-help">
-        <div class="slider-labels" aria-hidden="true">
-          <span>180&deg; W</span>
-          <span>0&deg;</span>
-          <span>180&deg; E</span>
-        </div>
-        <div class="controls-footer">
-          <p id="longitude-help">Drag the slider or enter a longitude to rotate the map.</p>
-          <button id="reset-button" class="reset-button" type="button">RESET <span aria-hidden="true">&orarr;</span></button>
-        </div>
       </section>
 
       <footer class="page-footer">
