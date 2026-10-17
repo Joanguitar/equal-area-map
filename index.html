@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f4ef">
+    <meta name="description" content="Explore an equal-area view of Earth and change which longitude sits at the center of the map.">
+    <title>Equal Area — A different center for the world</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/d3-array@3.2.4/dist/d3-array.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/d3-geo@3.1.1/dist/d3-geo.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4.0.0/dist/d3-geo-projection.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <main class="page">
+      <header class="topbar">
+        <a class="wordmark" href="./" aria-label="Equal Area home">
+          <span class="wordmark-mark" aria-hidden="true"></span>
+          <span>EQUAL AREA</span>
+        </a>
+        <span class="topbar-note">A map that moves with you</span>
+      </header>
+
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> WORLD / MOLLWEIDE PROJECTION</p>
+        <h1 id="page-title">The world,<br><span>from another angle.</span></h1>
+        <p class="intro-copy">Every place keeps its area. You choose what belongs at the center.</p>
+      </section>
+
+      <section class="map-section" aria-label="Interactive world map">
+        <div class="map-heading">
+          <div class="map-caption">
+            <span class="live-dot" aria-hidden="true"></span>
+            <span>EARTH, RE-CENTERED</span>
+          </div>
+          <p class="map-projection">MOLLWEIDE <span aria-hidden="true">/</span> EQUAL AREA</p>
+        </div>
+        <div class="map-frame">
+          <svg id="world-map" class="world-map" role="img" aria-label="World map centered at longitude 0 degrees">
+            <title>World map in the Mollweide equal-area projection</title>
+            <desc>Use the longitude controls below to change the center of the map.</desc>
+            <g class="map-layer map-ocean"></g>
+            <g class="map-layer map-graticule"></g>
+            <g class="map-layer map-land"></g>
+            <g class="map-layer map-borders"></g>
+            <g class="map-layer map-outline"></g>
+          </svg>
+          <div class="map-coordinates" aria-hidden="true">
+            <span class="coordinate-label">CENTER LONGITUDE</span>
+            <span id="map-center" class="coordinate-value">0&deg;</span>
+          </div>
+          <p id="map-status" class="map-status" role="status" aria-live="polite">Loading map data...</p>
+        </div>
+        <p class="map-credit">Geographic data from Natural Earth, via World Atlas.</p>
+      </section>
+
+      <section class="controls" aria-labelledby="controls-title">
+        <div class="controls-heading">
+          <div>
+            <p class="eyebrow control-eyebrow">MAKE IT YOURS</p>
+            <h2 id="controls-title">Choose your center</h2>
+          </div>
+          <label class="longitude-input">
+            <span class="visually-hidden">Center longitude in degrees, from -180 to 180</span>
+            <input id="longitude-number" type="number" min="-180" max="180" step="1" value="0" inputmode="numeric" aria-describedby="longitude-help">
+            <span class="input-unit">DEG</span>
+          </label>
+        </div>
+        <label class="visually-hidden" for="longitude-slider">Center longitude</label>
+        <input id="longitude-slider" class="longitude-slider" type="range" min="-180" max="180" step="1" value="0" aria-describedby="longitude-help">
+        <div class="slider-labels" aria-hidden="true">
+          <span>180&deg; W</span>
+          <span>0&deg;</span>
+          <span>180&deg; E</span>
+        </div>
+        <div class="controls-footer">
+          <p id="longitude-help">Drag the slider or enter a longitude to rotate the map.</p>
+          <button id="reset-button" class="reset-button" type="button">RESET <span aria-hidden="true">&orarr;</span></button>
+        </div>
+      </section>
+
+      <footer class="page-footer">
+        <span>Equal area. Different perspective.</span>
+        <span>EARTH / 01</span>
+      </footer>
+    </main>
+  </body>
+</html>
